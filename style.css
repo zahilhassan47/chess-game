@@ -315,23 +315,24 @@ body {
     line-height: 1.5;
 }
 
-/* Fallback 2D board */
+/* Fallback 2D board (default, works on every device) */
 .chess-board {
     width: 480px;
     height: 480px;
     display: grid;
     grid-template-columns: repeat(8, 1fr);
     grid-template-rows: repeat(8, 1fr);
-    transform: rotateX(18deg);
+    transform: perspective(1000px) rotateX(12deg);
     transition: transform 0.5s ease;
     box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
     border-radius: 10px;
     overflow: hidden;
     margin: 0 auto;
+    touch-action: manipulation;
 }
 
 .chess-board.flipped {
-    transform: rotateX(18deg) rotateY(180deg);
+    transform: rotate(180deg);
 }
 
 .square {

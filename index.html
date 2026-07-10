@@ -88,8 +88,9 @@
 
             <!-- Chess Board -->
             <div class="board-container" id="boardContainer">
-                <div class="loading-3d" id="loading3d">LOADING 3D BOARD…</div>
-                <canvas id="chessCanvas"></canvas>
+                <div class="loading-3d hidden" id="loading3d"></div>
+                <div class="chess-board" id="chessBoard"></div>
+                <canvas id="chessCanvas" style="display:none;"></canvas>
             </div>
 
             <!-- White's captured pieces -->
@@ -106,6 +107,7 @@
         <div class="controls">
             <button class="control-btn" id="undoBtn">UNDO</button>
             <button class="control-btn" id="flipBtn">FLIP BOARD</button>
+            <button class="control-btn" id="viewBtn">3D VIEW</button>
             <button class="control-btn" id="timerToggleBtn">TOGGLE TIMER</button>
             <button class="control-btn" id="rematchBtn">REMATCH</button>
             <button class="control-btn" id="menuBtn">MAIN MENU</button>

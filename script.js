@@ -489,7 +489,7 @@ function chooseAIMove(difficulty) {
         return moves[Math.floor(Math.random() * moves.length)];
     }
 
-    const depth = difficulty === 'hard' ? 4 : 2;
+    const depth = difficulty === 'hard' ? 3 : 2;
     aiDeadline = performance.now() + (difficulty === 'hard' ? 2500 : 800);
     let best = -Infinity, bestMove = moves[0];
     for (const m of moves) {
@@ -518,8 +518,16 @@ function squareToWorld(row, col) {
     return { x: (col - BOARD_HALF) , z: (row - BOARD_HALF) };
 }
 
+function webglAvailable() {
+    try {
+        const c = document.createElement('canvas');
+        return !!(window.WebGLRenderingContext && (c.getContext('webgl') || c.getContext('experimental-webgl')));
+    } catch (e) { return false; }
+}
+
 function initThree() {
     if (typeof THREE === 'undefined') return false;
+    if (!webglAvailable()) return false;
     const container = document.getElementById('boardContainer');
     const canvas = document.getElementById('chessCanvas');
     const w = container.clientWidth || 560, h = container.clientHeight || 560;
@@ -598,6 +606,10 @@ function initThree() {
     window.addEventListener('resize', onResize);
     renderer.domElement.addEventListener('pointerdown', onPointerDown);
 
+    const loading = document.getElementById('loading3d');
+    if (loading) loading.classList.add('hidden');
+
+    View.ready = true;
     animate();
     return true;
 }
@@ -903,9 +915,12 @@ function animateMove3D(move, info, onDone) {
 }
 
 /* =====================================================================
-   2D FALLBACK
+   VIEW MODE
+   Default to the reliable 2D board (every device, mouse + touch).
+   Real WebGL 3D is opt-in via the "3D VIEW" button, activated only when
+   WebGL + Three.js are available on the device.
    ===================================================================== */
-let use3D = true;
+let use3D = false;
 
 function renderBoard2D() {
     const boardEl = document.getElementById('boardContainer');
@@ -1037,7 +1052,15 @@ function finishCommit(move) {
     gameState.history.push(cloneBoard(gameState.board));
     performMoveOn(gameState.board, move);
 
-    if (use3D) animateMove3D(move, { movingMesh, capturedMesh, promoting }, () => afterMove(move, wasCapture, movingColor));
+    if (use3D) {
+        try {
+            animateMove3D(move, { movingMesh, capturedMesh, promoting }, () => afterMove(move, wasCapture, movingColor));
+        } catch (e) {
+            console.error('3D animation error, falling back to sync', e);
+            syncBoard3D();
+            afterMove(move, wasCapture, movingColor);
+        }
+    }
     else { renderBoard2D(); afterMove(move, wasCapture, movingColor); }
 }
 
@@ -1069,8 +1092,20 @@ function aiMove() {
     setStatus('AI THINKING…');
     // defer so the UI can paint the "thinking" state
     setTimeout(() => {
-        const move = chooseAIMove(gameState.aiDifficulty);
+        let move;
+        try {
+            move = chooseAIMove(gameState.aiDifficulty);
+        } catch (e) {
+            console.error('AI search error', e);
+            move = null;
+        }
         gameState.thinking = false;
+        // Fallback: if the search failed or found nothing, pick any legal move so
+        // the game can never freeze on "AI THINKING…".
+        if (!move) {
+            const all = allLegalMoves(gameState.board, gameState.currentPlayer);
+            move = all.length ? all[Math.floor(Math.random() * all.length)] : null;
+        }
         if (!move) { checkGameState(); return; }
         // AI promotion defaults to queen
         if (!move.promotion && gameState.board[move.from.row][move.from.col].type === 'pawn' &&
@@ -1296,6 +1331,7 @@ function setupEventListeners() {
 
     document.getElementById('undoBtn').addEventListener('click', undoMove);
     document.getElementById('flipBtn').addEventListener('click', flipBoard);
+    document.getElementById('viewBtn').addEventListener('click', toggleView);
     document.getElementById('timerToggleBtn').addEventListener('click', () => {
         gameState.timers.active = !gameState.timers.active;
         if (gameState.timers.active) startTimer();
@@ -1325,27 +1361,39 @@ function setupEventListeners() {
 function init() {
     createParticles();
     setupEventListeners();
+    // Default to the reliable 2D board (no WebGL needed). The 3D view is opt-in.
+    use3D = false;
+    const cv = document.getElementById('chessCanvas'); if (cv) cv.style.display = 'none';
+}
 
-    const loading = document.getElementById('loading3d');
-    try {
-        use3D = initThree();
-    } catch (err) {
-        console.error(err);
-        use3D = false;
-    }
-    if (use3D) {
-        View.ready = true;
-        loading.classList.add('hidden');
+/* Toggle between the 2D board and the real WebGL 3D view. The 3D view only
+   turns on if WebGL + Three.js are available on this device. */
+function toggleView() {
+    const btn = document.getElementById('viewBtn');
+    const boardEl = document.getElementById('chessBoard');
+    const canvas = document.getElementById('chessCanvas');
+    if (!use3D) {
+        let ok = View.ready;
+        if (!ok) { try { ok = initThree(); } catch (e) { console.error(e); ok = false; } }
+        if (ok && View.ready) {
+            use3D = true;
+            if (boardEl) boardEl.style.display = 'none';
+            if (canvas) canvas.style.display = 'block';
+            syncBoard3D();
+            updateHighlights3D();
+            btn.textContent = '2D VIEW';
+            playSound('special');
+        } else {
+            setStatus('3D unavailable on this device');
+            btn.textContent = '3D VIEW';
+        }
     } else {
-        loading.classList.add('error');
-        loading.style.top = '6px';
-        loading.style.transform = 'none';
-        loading.textContent = '3D engine unavailable (offline?). Showing 2D board.';
-        // Hide the (empty) canvas and build a 2D board so the game stays playable
-        const cv = document.getElementById('chessCanvas'); if (cv) cv.style.display = 'none';
-        const el = document.createElement('div');
-        el.id = 'chessBoard'; el.className = 'chess-board';
-        document.getElementById('boardContainer').appendChild(el);
+        use3D = false;
+        if (boardEl) boardEl.style.display = '';
+        if (canvas) canvas.style.display = 'none';
+        renderBoard2D();
+        btn.textContent = '3D VIEW';
+        playSound('click');
     }
 }
 
