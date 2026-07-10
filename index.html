@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>3D Chess Ultimate</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+
+    <!-- Mode Selection Screen -->
+    <div class="mode-overlay" id="modeOverlay">
+        <div class="mode-container">
+            <h1 class="game-title">3D CHESS ULTIMATE</h1>
+            <div class="modes-grid">
+                <button class="mode-card" data-mode="pvp">
+                    <div class="mode-icon">👥</div>
+                    <h2>PLAYER VS PLAYER</h2>
+                    <p>Local multiplayer</p>
+                </button>
+                <button class="mode-card" data-mode="pvai">
+                    <div class="mode-icon">🤖</div>
+                    <h2>PLAYER VS AI</h2>
+                    <p>Challenge the computer</p>
+                </button>
+                <button class="mode-card" data-mode="aivai">
+                    <div class="mode-icon">⚔️</div>
+                    <h2>AI VS AI</h2>
+                    <p>Spectator mode</p>
+                </button>
+                <button class="mode-card" data-mode="online">
+                    <div class="mode-icon">🌐</div>
+                    <h2>ONLINE MODE</h2>
+                    <p>Simulated online</p>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Difficulty Selection -->
+    <div class="mode-overlay" id="difficultyOverlay">
+        <div class="mode-container">
+            <h1 class="game-title">SELECT DIFFICULTY</h1>
+            <div class="modes-grid">
+                <button class="mode-card" data-difficulty="easy">
+                    <div class="mode-icon">🌱</div>
+                    <h2>EASY</h2>
+                    <p>Random moves</p>
+                </button>
+                <button class="mode-card" data-difficulty="medium">
+                    <div class="mode-icon">⭐</div>
+                    <h2>MEDIUM</h2>
+                    <p>Basic strategy</p>
+                </button>
+                <button class="mode-card" data-difficulty="hard">
+                    <div class="mode-icon">🔥</div>
+                    <h2>HARD</h2>
+                    <p>Minimax AI</p>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Game Container -->
+    <div class="game-container" id="gameContainer">
+        <header class="game-header">
+            <h1 class="title">3D CHESS</h1>
+            <div class="game-status" id="gameStatus">WHITE'S TURN</div>
+            <div class="timer-container">
+                <div class="timer">
+                    <span class="timer-label">WHITE</span>
+                    <span class="timer-value" id="whiteTimer">10:00</span>
+                </div>
+                <div class="timer">
+                    <span class="timer-label">BLACK</span>
+                    <span class="timer-value" id="blackTimer">10:00</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="chess-layout">
+            <!-- Black's captured pieces -->
+            <div class="graveyard" id="blackGraveyard"></div>
+
+            <!-- Chess Board -->
+            <div class="board-container" id="boardContainer">
+                <div class="loading-3d" id="loading3d">LOADING 3D BOARD…</div>
+                <canvas id="chessCanvas"></canvas>
+            </div>
+
+            <!-- White's captured pieces -->
+            <div class="graveyard" id="whiteGraveyard"></div>
+        </div>
+
+        <!-- Move History Panel -->
+        <div class="move-history-container">
+            <div class="panel-header">MOVE HISTORY</div>
+            <div class="move-history" id="moveHistory"></div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <button class="control-btn" id="undoBtn">UNDO</button>
+            <button class="control-btn" id="flipBtn">FLIP BOARD</button>
+            <button class="control-btn" id="timerToggleBtn">TOGGLE TIMER</button>
+            <button class="control-btn" id="rematchBtn">REMATCH</button>
+            <button class="control-btn" id="menuBtn">MAIN MENU</button>
+        </div>
+
+        <!-- Promotion Modal -->
+        <div class="promotion-modal" id="promotionModal">
+            <div class="promotion-content">
+                <h3>CHOOSE PROMOTION</h3>
+                <div class="promotion-options" id="promotionOptions">
+                    <button class="promotion-piece" data-piece="queen">♕</button>
+                    <button class="promotion-piece" data-piece="rook">♖</button>
+                    <button class="promotion-piece" data-piece="bishop">♗</button>
+                    <button class="promotion-piece" data-piece="knight">♘</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Over Modal -->
+        <div class="game-over-modal" id="gameOverModal">
+            <div class="modal-content">
+                <h2 id="gameResult">CHECKMATE!</h2>
+                <p id="gameResultText">WHITE WINS!</p>
+                <button class="reset-btn" id="playAgainBtn">PLAY AGAIN</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="confetti-container" id="confetti"></div>
+
+    <!-- Three.js (3D engine) with graceful fallback to 2D if CDN unavailable -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

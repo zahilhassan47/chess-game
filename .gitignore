@@ -1,0 +1,7 @@
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.log
+
+# Dependency directories (none needed for this static site)
+node_modules/
